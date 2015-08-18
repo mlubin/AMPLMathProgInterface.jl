@@ -3,11 +3,11 @@
 
 using Ipopt
 import MathProgBase
-import ampl
+import AmplNLReader
 import AMPLMathProgInterface
 
 function solve_with_ipopt(nlfile::ASCIIString)
-  nlp = ampl.AmplModel(nlfile)
+  nlp = AmplNLReader.AmplModel(nlfile)
   # options can be set here
   m = MathProgBase.model(IpoptSolver())
   AMPLMathProgInterface.loadamplproblem!(m, nlp)

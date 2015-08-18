@@ -1,6 +1,6 @@
 module AMPLMathProgInterface
 
-using ampl
+using AmplNLReader
 
 import MathProgBase
 import MathProgBase.SolverInterface
@@ -22,12 +22,12 @@ MathProgBase.eval_g(d::AmplNLPEvaluator, g, x) = copy!(g, cons(d.nlp, x))
 MathProgBase.eval_grad_f(d::AmplNLPEvaluator, g, x) = copy!(g, grad(d.nlp, x))
 
 function MathProgBase.jac_structure(d::AmplNLPEvaluator)
-  rows, cols, vals = jac_coord(d.nlp, d.nlp.x0)
+  rows, cols, vals = jac_coord(d.nlp, d.nlp.meta.x0)
   return rows, cols
 end
 
 function MathProgBase.hesslag_structure(d::AmplNLPEvaluator)
-  rows, cols, vals = hess_coord(d.nlp, d.nlp.x0, y=ones(d.nlp.ncon))
+  rows, cols, vals = hess_coord(d.nlp, d.nlp.meta.x0, y=ones(d.nlp.meta.ncon))
   return rows, cols
 end
 
@@ -55,15 +55,16 @@ function MathProgBase.eval_hesslag(d::AmplNLPEvaluator, H, x, σ, μ)
 end
 
 # How do we extract this?
-#MathProgBase.isobjlinear(d::AmplNLPEvaluator)
+MathProgBase.isobjlinear(d::AmplNLPEvaluator) = false
 #MathProgBase.isobjquadratic(d::AmplNLPEvaluator)
 
-MathProgBase.isconstrlinear(d::AmplNLPEvaluator,i::Int) = (i in d.nlp.lin)
+MathProgBase.isconstrlinear(d::AmplNLPEvaluator,i::Int) = (i in d.nlp.meta.lin)
 
 function loadamplproblem!(m::MathProgBase.AbstractMathProgModel, nlp::AmplModel)
-  sense = nlp.minimize ? :Min : :Max
-  MathProgBase.loadnonlinearproblem!(m, nlp.nvar, nlp.ncon, nlp.lvar,
-    nlp.uvar, nlp.lcon, nlp.ucon, sense, AmplNLPEvaluator(nlp))
+  sense = nlp.meta.minimize ? :Min : :Max
+  MathProgBase.loadnonlinearproblem!(m, nlp.meta.nvar, nlp.meta.ncon, nlp.meta.lvar,
+    nlp.meta.uvar, nlp.meta.lcon, nlp.meta.ucon, sense, AmplNLPEvaluator(nlp))
+  MathProgBase.setwarmstart!(m, nlp.meta.x0)
 end
 
 end # module
