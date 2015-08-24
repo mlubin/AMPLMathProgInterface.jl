@@ -109,7 +109,9 @@ function loadamplproblem!(m::MathProgBase.AbstractMathProgModel, nlp::AmplModel)
   end
   @assert varidx == nlp.meta.nvar + 1
   # Set variable types
-  MathProgBase.setvartype!(m, v)
+  if any(vtype -> vtype == :Int || vtype == :Bin, v)
+      MathProgBase.setvartype!(m, v)
+  end
 end
 
 end # module
