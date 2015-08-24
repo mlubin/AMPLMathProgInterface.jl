@@ -65,6 +65,51 @@ function loadamplproblem!(m::MathProgBase.AbstractMathProgModel, nlp::AmplModel)
   MathProgBase.loadnonlinearproblem!(m, nlp.meta.nvar, nlp.meta.ncon, nlp.meta.lvar,
     nlp.meta.uvar, nlp.meta.lcon, nlp.meta.ucon, sense, AmplNLPEvaluator(nlp))
   MathProgBase.setwarmstart!(m, nlp.meta.x0)
+
+  # AMPL obfuscation ordering:
+  nnlvar = max(nlp.meta.nlvc, nlp.meta.nlvo)
+  narcvar = nlp.meta.nwv
+  nlinvar = nlp.meta.nvar - (nnlvar + narcvar + nlp.meta.nbv + nlp.meta.niv)
+  nbinvar = nlp.meta.nbv
+  nintvar = nlp.meta.niv
+
+  v = fill(:Cont, nlp.meta.nvar)
+  # First populate Table 4
+  varidx = 1
+  for i = 1:(nlp.meta.nlvb - nlp.meta.nlvbi)
+    varidx += 1
+  end
+  for i = 1:nlp.meta.nlvbi
+    v[varidx] = :Int
+    varidx += 1
+  end
+  for i = 1:(nlp.meta.nlvc - (nlp.meta.nlvb + nlp.meta.nlvci))
+    varidx += 1
+  end
+  for i = 1:nlp.meta.nlvci
+    v[varidx] = :Int
+    varidx += 1
+  end
+  for i = 1:(nlp.meta.nlvo - (nlp.meta.nlvc + nlp.meta.nlvoi))
+    varidx += 1
+  end
+  for i = 1:nlp.meta.nlvoi
+    v[varidx] = :Int
+    varidx += 1
+  end
+  # Now populate Table 3
+  varidx += narcvar + nlinvar
+  for i = 1:nbinvar
+    v[varidx] = :Bin
+    varidx += 1
+  end
+  for i = 1:nintvar
+    v[varidx] = :Int
+    varidx += 1
+  end
+  @assert varidx == nlp.meta.nvar + 1
+  # Set variable types
+  MathProgBase.setvartype!(m, v)
 end
 
 end # module
