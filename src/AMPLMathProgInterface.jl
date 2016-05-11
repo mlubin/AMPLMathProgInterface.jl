@@ -37,7 +37,7 @@ function MathProgBase.eval_jac_g(d::AmplNLPEvaluator, J, x)
   copy!(J, vals)
 end
 
-# Are there specialized methods for Jac-vec products?
+# AMPL does not provide specialized methods for Jac-vec products.
 # MathProgBase.eval_jac_prod(d::AmplNLPEvaluator, J, x)
 # MathProgBase.eval_jac_prod_t(d::AmplNLPEvaluator, J, x)
 
@@ -54,15 +54,16 @@ function MathProgBase.eval_hesslag(d::AmplNLPEvaluator, H, x, σ, μ)
   copy!(H, vals)
 end
 
-# How do we extract this?
-MathProgBase.isobjlinear(d::AmplNLPEvaluator) = false
+MathProgBase.isobjlinear(d::AmplNLPEvaluator) = d.nlp.meta.nlo == 0
+
+# AMPL doesn't detect quadratic functions.
 #MathProgBase.isobjquadratic(d::AmplNLPEvaluator)
 
 MathProgBase.isconstrlinear(d::AmplNLPEvaluator,i::Int) = (i in d.nlp.meta.lin)
 
 function loadamplproblem!(m::MathProgBase.AbstractMathProgModel, nlp::AmplModel)
   sense = nlp.meta.minimize ? :Min : :Max
-  MathProgBase.loadnonlinearproblem!(m, nlp.meta.nvar, nlp.meta.ncon, nlp.meta.lvar,
+  MathProgBase.loadproblem!(m, nlp.meta.nvar, nlp.meta.ncon, nlp.meta.lvar,
     nlp.meta.uvar, nlp.meta.lcon, nlp.meta.ucon, sense, AmplNLPEvaluator(nlp))
   MathProgBase.setwarmstart!(m, nlp.meta.x0)
 

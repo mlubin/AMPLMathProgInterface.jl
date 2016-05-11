@@ -9,7 +9,7 @@ import AMPLMathProgInterface
 function solve_with_ipopt(nlfile::ASCIIString)
   nlp = AmplNLReader.AmplModel(nlfile)
   # options can be set here
-  m = MathProgBase.model(IpoptSolver())
+  m = MathProgBase.NonlinearModel(IpoptSolver())
   AMPLMathProgInterface.loadamplproblem!(m, nlp)
   MathProgBase.optimize!(m)
 
@@ -18,7 +18,7 @@ function solve_with_ipopt(nlfile::ASCIIString)
 
   println("Optimal value: $objval")
   println("Solution: $x")
-  
+
 end
 
 if length(ARGS) != 1
