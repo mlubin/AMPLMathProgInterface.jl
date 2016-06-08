@@ -44,13 +44,13 @@ end
 
 function MathProgBase.eval_hesslag_prod(d::AmplNLPEvaluator, h, x, v, σ, μ)
   obj(d.nlp, x) # force hessian evaluation at this point
-  result = hprod(d.nlp, x, v, y = -μ, obj_weight = σ)
+  result = hprod(d.nlp, x, v, y = -μ, σ = σ)
   copy!(h, result)
 end
 
 function MathProgBase.eval_hesslag(d::AmplNLPEvaluator, H, x, σ, μ)
   obj(d.nlp, x) # force hessian evaluation at this point
-  rows, cols, vals = hess_coord(d.nlp, x, y = -μ, obj_weight = σ)
+  rows, cols, vals = hess_coord(d.nlp, x, y = -μ, σ = σ)
   copy!(H, vals)
 end
 
